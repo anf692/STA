@@ -1,0 +1,29 @@
+# Fichiers Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Environnement virtuel
+venv/
+env/
+ENV/
+.venv/
+
+# Base de données (SQLite par défaut)
+db.sqlite3
+
+# Fichiers de migration inutiles (optionnel)
+# migrations/*.pyc
+
+
+# Variables d'environnement
+.env
+
+
+# Cache
+*.cache
+
+# IDE / éditeurs
+.vscode/
+.idea/

@@ -1,7 +1,10 @@
 from django.shortcuts import redirect
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import login
-from django.views.generic import CreateView
+from django.views.generic import (
+    ListView, DetailView, CreateView, UpdateView, DeleteView
+)
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.urls import reverse_lazy
 from .models import Entry, Category
 
@@ -18,4 +21,63 @@ class RegisterView(CreateView):
         login(self.request, user)
         return redirect(self.success_url)
     
-    
+
+# ─── LIST ─────────────────────────────────────────────────
+class EntryListView(LoginRequiredMixin, ListView):
+    model = Entry
+    template_name = 'dashboard.html'
+    context_object_name = 'entries'
+    paginate_by = 6 
+
+    def get_queryset(self):
+        # Chaque user voit UNIQUEMENT ses propres logs
+        return Entry.objects.filter(
+            auteur=self.request.user
+        ).order_by('-date_creation')
+
+
+# ─── DETAIL ───────────────────────────────────────────────
+class EntryDetailView(LoginRequiredMixin, DetailView):
+    model = Entry
+    template_name = 'entry_detail.html'
+    context_object_name = 'entry'
+
+
+# ─── CREATE ───────────────────────────────────────────────
+class EntryCreateView(LoginRequiredMixin, CreateView):
+    model = Entry
+    template_name = 'entry_form.html'
+    fields = ['titre', 'contenu', 'categorie', 'image_preuve']
+    success_url = reverse_lazy('dashboard')
+
+    def form_valid(self, form):
+        # L'auteur = utilisateur connecté (automatique)
+        form.instance.auteur = self.request.user
+        return super().form_valid(form)
+
+
+# ─── UPDATE ───────────────────────────────────────────────
+class EntryUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    model = Entry
+    template_name = 'entry_form.html'
+    fields = ['titre', 'contenu', 'categorie', 'image_preuve']
+    success_url = reverse_lazy('dashboard')
+
+    def test_func(self):
+        # Seul l'auteur peut modifier
+        entry = self.get_object()
+        return self.request.user == entry.auteur
+
+
+# ─── DELETE ───────────────────────────────────────────────
+class EntryDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+    model = Entry
+    template_name = 'entry_confirm_delete.html'
+    success_url = reverse_lazy('dashboard')
+
+    def test_func(self):
+        # Seul l'auteur peut supprimer
+        entry = self.get_object()
+        return self.request.user == entry.auteur
+
+

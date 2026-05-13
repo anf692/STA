@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>📋 Mes Logs
+        <span class="badge ms-2" style="background:#6366F1">
+            {{ page_obj.paginator.count }}
+        </span>
+    </h2>
+    <a href="{% url 'entry-create' %}" class="btn btn-primary">
+        + Nouveau Log
+    </a>
+</div>
+
+{% if entries %}
+<div class="row g-4">
+    {% for entry in entries %}
+    <div class="col-md-6">
+        <div class="card h-100 p-3">
+
+            <!-- Badge catégorie -->
+            {% if entry.categorie %}
+            <span class="badge mb-2" style="background:#6366F1">
+                {{ entry.categorie.nom }}
+            </span>
+            {% endif %}
+
+            <!-- Titre -->
+            <h5 class="fw-bold">{{ entry.titre }}</h5>
+
+            <!-- Aperçu contenu -->
+            <p class="text-secondary small">
+                {{ entry.contenu|truncatewords:20 }}
+            </p>
+
+            <!-- Image miniature -->
+            {% if entry.image_preuve %}
+            <img src="{{ entry.image_preuve.url }}"
+                 class="img-fluid rounded mb-2"
+                 style="max-height:120px; object-fit:cover;">
+            {% endif %}
+
+            <!-- Footer carte -->
+            <div class="d-flex justify-content-between align-items-center mt-auto">
+                <small class="text-secondary">
+                    📅 {{ entry.date_creation|date:"d/m/Y H:i" }}
+                </small>
+                <div class="d-flex gap-2">
+                    <a href="{% url 'entry-detail' entry.pk %}"
+                       class="btn btn-sm btn-outline-light">Voir</a>
+                    {% if entry.auteur == request.user %}
+                    <a href="{% url 'entry-update' entry.pk %}"
+                       class="btn btn-sm btn-outline-warning">✏️</a>
+                    <a href="{% url 'entry-delete' entry.pk %}"
+                       class="btn btn-sm btn-outline-danger">🗑️</a>
+                    {% endif %}
+                </div>
+            </div>
+
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- PAGINATION -->
+<nav class="mt-4 d-flex justify-content-center">
+    <ul class="pagination">
+        {% if page_obj.has_previous %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">
+                ← Précédent
+            </a>
+        </li>
+        {% endif %}
+
+        <li class="page-item active">
+            <span class="page-link" style="background:#6366F1; border-color:#6366F1">
+                {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
+            </span>
+        </li>
+
+        {% if page_obj.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.next_page_number }}">
+                Suivant →
+            </a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+
+{% else %}
+<!-- État vide -->
+<div class="text-center mt-5">
+    <p style="font-size:4rem">📭</p>
+    <h4 class="text-secondary">Aucun log pour le moment</h4>
+    <a href="{% url 'entry-create' %}" class="btn btn-primary mt-3">
+        Créer mon premier log
+    </a>
+</div>
+{% endif %}
+
+{% endblock %}

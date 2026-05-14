@@ -1,47 +1,66 @@
+{% load static %}
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>STA — Système de Traçabilité</title>
+    <title>STA- Système de Traçabilité d'activités</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        body { background-color: #0F172A; color: #F8FAFC; }
-        .navbar { background-color: #1E293B !important; }
-        .card { background-color: #1E293B; border: 1px solid #334155; color: #F8FAFC; }
-        .btn-primary { background-color: #6366F1; border-color: #6366F1; }
-        .form-control { background-color: #0F172A; border-color: #334155; color: #F8FAFC; }
-        .form-control:focus { background-color: #0F172A; color: #F8FAFC; border-color: #6366F1; }
-    </style>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Caveat:wght@700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="{% static 'css/base.css' %}">
+
+
 </head>
 <body>
-    {% if user.is_authenticated %}
-    <nav class="navbar navbar-dark mb-4">
-        <div class="container">
-            <span class="navbar-brand fw-bold" style="color:#6366F1">⚡ STA</span>
-            <div class="d-flex align-items-center gap-3">
-                <span class="text-secondary">{{ user.username }}</span>
-                <form method="post" action="{% url 'logout' %}">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-sm btn-outline-danger">Déconnexion</button>
-                </form>
-            </div>
-        </div>
-    </nav>
-    {% endif %}
-
-    <div class="container">
-        {% if messages %}
-            {% for message in messages %}
-                <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
-                    {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            {% endfor %}
+      <!-- NAV -->
+  <nav class="sticky-top">
+    <div class="container d-flex align-items-center justify-content-between">
+      <a class="logo" href="{% url 'dashboard' %}">Logo</a>
+      <div class="d-flex align-items-center gap-3">
+        <a class="nav-link-custom d-none d-md-inline" href="{% url 'dashboard' %}">Accueil</a>
+        <a class="nav-link-custom d-none d-md-inline" href="{% url 'dashboard' %}">Logs</a>
+        <a class="nav-link-custom d-none d-md-inline" href="#">À propos</a>
+        {% if user.is_authenticated %}
+        <span class="nav-link-custom"><i class="bi bi-person-circle me-1"></i>{{ user.username }}</span>
+        <form action="{% url 'logout' %}" method="post">
+          {% csrf_token %}
+          <button type="submit" class="btn-outline-custom">Se déconnecter</button>
+        </form>
+        {% else %}
+        <a href="{% url 'login' %}" class="btn-outline-custom">Se connecter</a>
+        <a href="{% url 'register' %}" class="btn-solid-custom">Commencer</a>
         {% endif %}
-
-        {% block content %}{% endblock %}
+      </div>
     </div>
+  </nav>
+
+    {% block content %}
+    {% endblock %}
+
+    <!-- FOOTER -->
+  <footer>
+    <div class="container py-4 text-center">
+      <div class="logo-pied mb-3">Logo</div>
+      <div class="liens-pied">
+        <a href="{% url 'dashboard' %}">Accueil</a>
+        <a href="{% url 'dashboard' %}">Logs</a>
+        <a href="#">À propos</a>
+        <a href="#">Contact</a>
+      </div>
+    </div>
+    <div class="bas-pied py-3">
+      <div class="container d-flex justify-content-between flex-wrap gap-2">
+        <span>© 2026 STA. Tous droits réservés.</span>
+        <div>
+          <a href="#">Politique de confidentialité</a>
+          <a href="#">Conditions d'utilisation</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>

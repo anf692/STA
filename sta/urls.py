@@ -11,10 +11,12 @@ urlpatterns = [
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
     path('register/', views.RegisterView.as_view(), name='register'),
 
+    path('', views.HomeView.as_view(), name='accueil'),
     # CRUD
-    path('', views.EntryListView.as_view(), name='dashboard'),
+    path('entry/', views.EntryListView.as_view(), name='dashboard'),
     path('entry/<int:pk>/', views.EntryDetailView.as_view(), name='entry-detail'),
     path('entry/create/', views.EntryCreateView.as_view(), name='entry-create'),
     path('entry/<int:pk>/update/', views.EntryUpdateView.as_view(), name='entry-update'),
     path('entry/<int:pk>/delete/', views.EntryDeleteView.as_view(), name='entry-delete'),
 ]
+

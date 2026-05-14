@@ -9,6 +9,7 @@ from django.urls import reverse_lazy
 from .models import Entry, Category
 
 
+
 class RegisterView(CreateView):
     form_class = UserCreationForm
     template_name = 'registration/register.html'
@@ -20,20 +21,30 @@ class RegisterView(CreateView):
         # On le connecte automatiquement après inscription
         login(self.request, user)
         return redirect(self.success_url)
+
+
+class HomeView(ListView):
+    model = Entry
+    template_name = 'accueil.html'
+    context_object_name = 'home' 
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['home'] = Entry.objects.all().order_by('-date_creation')[:3]
+        return context
     
+
 
 # ─── LIST ─────────────────────────────────────────────────
 class EntryListView(LoginRequiredMixin, ListView):
     model = Entry
-    template_name = 'dashboard.html'
+    template_name = 'entry_list.html'
     context_object_name = 'entries'
     paginate_by = 6 
 
     def get_queryset(self):
-        # Chaque user voit UNIQUEMENT ses propres logs
-        return Entry.objects.filter(
-            auteur=self.request.user
-        ).order_by('-date_creation')
+        # Chaque user voit tous les logs
+        return Entry.objects.all().order_by('-date_creation')
 
 
 # ─── DETAIL ───────────────────────────────────────────────

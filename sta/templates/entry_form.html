@@ -1,32 +1,495 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
 
+{% load static %}
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-6">
-        <div class="card p-4">
-            <h3 class="mb-4">
-                {% if object %}✏️ Modifier le log{% else %}➕ Nouveau Log{% endif %}
-            </h3>
-            <form method="post" enctype="multipart/form-data">
-                {% csrf_token %}
-                {% for field in form %}
-                <div class="mb-3">
-                    <label class="form-label">{{ field.label }}</label>
-                    {{ field }}
-                    {% if field.errors %}
-                    <div class="text-danger small">{{ field.errors }}</div>
-                    {% endif %}
-                </div>
-                {% endfor %}
-                <div class="d-flex gap-2 justify-content-end">
-                    <a href="{% url 'dashboard' %}"
-                       class="btn btn-outline-secondary">Annuler</a>
-                    <button type="submit" class="btn btn-primary">
-                        💾 Enregistrer
-                    </button>
-                </div>
-            </form>
-        </div>
+
+  <style>
+
+    /* ── Variables de couleurs ── */
+    :root {
+      --vert:       #22c55e;
+      --noir:       #111827;
+      --gris-texte: #6b7280;
+      --bordure:    #e5e7eb;
+      --fond-clair: #f9fafb;
+    }
+
+
+    /* ══════════════════════════════
+       EN-TÊTE DE LA PAGE
+    ══════════════════════════════ */
+    .entete-formulaire {
+      padding: 50px 0 30px;
+      border-bottom: 1px solid var(--bordure);
+      margin-bottom: 50px;
+    }
+
+    .fil-ariane {
+      font-size: .85rem;
+      color: var(--gris-texte);
+      margin-bottom: .75rem;
+    }
+
+    .fil-ariane a {
+      color: var(--gris-texte);
+      text-decoration: none;
+    }
+
+    .fil-ariane a:hover {
+      color: var(--noir);
+    }
+
+    .titre-page {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: .4rem;
+    }
+
+    .sous-titre-page {
+      color: var(--gris-texte);
+      font-size: .95rem;
+    }
+
+    /* ══════════════════════════════
+       CARTE DU FORMULAIRE
+    ══════════════════════════════ */
+    .carte-formulaire {
+      border: 1.5px solid var(--bordure);
+      border-radius: 12px;
+      padding: 2rem 2.5rem;
+      background: #fff;
+    }
+
+    /* ══════════════════════════════
+       CHAMPS DU FORMULAIRE
+    ══════════════════════════════ */
+    .etiquette-champ {
+      font-size: .9rem;
+      font-weight: 600;
+      color: var(--noir);
+      margin-bottom: .4rem;
+      display: block;
+    }
+
+    .asterisque-requis {
+      color: #ef4444;
+      margin-left: 2px;
+    }
+
+    .champ-saisie {
+      width: 100%;
+      border: 1.5px solid var(--bordure);
+      border-radius: 8px;
+      padding: .6rem .85rem;
+      font-size: .9rem;
+      font-family: 'Space Grotesk', sans-serif;
+      color: var(--noir);
+      background: #fff;
+      outline: none;
+      transition: border-color .2s;
+    }
+
+    .champ-saisie:focus {
+      border-color: var(--noir);
+    }
+
+    .champ-zone-texte {
+      resize: vertical;
+      min-height: 160px;
+    }
+
+    .texte-aide {
+      font-size: .78rem;
+      color: var(--gris-texte);
+      margin-top: .35rem;
+    }
+
+    /* ── Erreurs de validation Django ── */
+    .erreur-champ {
+      font-size: .8rem;
+      color: #ef4444;
+      margin-top: .3rem;
+    }
+
+    .champ-invalide {
+      border-color: #ef4444;
+    }
+
+    /* ══════════════════════════════
+       ZONE D'UPLOAD IMAGE
+    ══════════════════════════════ */
+    .zone-upload {
+      border: 2px dashed var(--bordure);
+      border-radius: 8px;
+      padding: 2rem;
+      text-align: center;
+      background: var(--fond-clair);
+      transition: border-color .2s;
+    }
+
+    .zone-upload:hover {
+      border-color: var(--noir);
+    }
+
+    .icone-upload {
+      font-size: 2rem;
+      color: var(--gris-texte);
+      margin-bottom: .5rem;
+    }
+
+    .texte-upload {
+      font-size: .85rem;
+      color: var(--gris-texte);
+    }
+
+    /* ══════════════════════════════
+       APERÇU IMAGE EXISTANTE (mode édition)
+    ══════════════════════════════ */
+    .apercu-image {
+      border: 1.5px solid var(--bordure);
+      border-radius: 8px;
+      padding: .75rem;
+      background: var(--fond-clair);
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      margin-bottom: .75rem;
+    }
+
+    .apercu-image img {
+      width: 60px;
+      height: 60px;
+      object-fit: cover;
+      border-radius: 6px;
+    }
+
+    .apercu-image span {
+      font-size: .85rem;
+      color: var(--gris-texte);
+    }
+
+    /* ══════════════════════════════
+       SÉPARATEUR ET TITRE DE SECTION
+    ══════════════════════════════ */
+    .separateur-section {
+      border: none;
+      border-top: 1px solid var(--bordure);
+      margin: 1.75rem 0;
+    }
+
+    .titre-section {
+      font-size: .8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--gris-texte);
+      margin-bottom: 1.25rem;
+    }
+
+    /* ══════════════════════════════
+       BOUTONS D'ACTION
+    ══════════════════════════════ */
+    .bouton-valider {
+      background: var(--noir);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: .65rem 1.75rem;
+      font-size: .95rem;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: 'Space Grotesk', sans-serif;
+      transition: opacity .2s;
+    }
+
+    .bouton-valider:hover {
+      opacity: .85;
+    }
+
+    .bouton-annuler {
+      background: transparent;
+      color: var(--noir);
+      border: 1.5px solid var(--bordure);
+      border-radius: 8px;
+      padding: .65rem 1.75rem;
+      font-size: .95rem;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: 'Space Grotesk', sans-serif;
+      text-decoration: none;
+      transition: background .2s;
+      display: inline-block;
+    }
+
+    .bouton-annuler:hover {
+      background: var(--fond-clair);
+      color: var(--noir);
+    }
+
+    /* ══════════════════════════════
+       PANNEAU LATÉRAL (conseils)
+    ══════════════════════════════ */
+    .panneau-conseil {
+      border: 1.5px solid var(--bordure);
+      border-radius: 12px;
+      padding: 1.5rem;
+      background: var(--fond-clair);
+      position: sticky;
+      top: 90px;
+    }
+
+    .titre-conseil {
+      font-size: .85rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      color: var(--noir);
+    }
+
+    .item-conseil {
+      display: flex;
+      gap: .6rem;
+      margin-bottom: .9rem;
+      font-size: .83rem;
+      color: var(--gris-texte);
+      line-height: 1.5;
+    }
+
+    .item-conseil i {
+      color: var(--vert);
+      font-size: .95rem;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+
+  </style>
+
+
+  <!-- EN-TÊTE DE LA PAGE-->
+  <div class="entete-formulaire">
+    <div class="container">
+
+      <!-- Fil d'Ariane -->
+      <p class="fil-ariane">
+        <a href="{% url 'accueil' %}">Accueil</a>
+        <span class="mx-1">/</span>
+        {% if object %}
+          <a href="{% url 'entry-detail' object.pk %}">{{ object.titre }}</a>
+          <span class="mx-1">/</span>
+          Modifier
+        {% else %}
+          Nouveau log
+        {% endif %}
+      </p>
+
+      <!-- Titre -->
+      <h1 class="titre-page">
+        {% if object %}Modifier le log{% else %}Créer un nouveau log{% endif %}
+      </h1>
+      <p class="sous-titre-page">
+        {% if object %}
+          Mettez à jour les informations de votre log.
+        {% else %}
+          Renseignez les informations de votre activité du jour.
+        {% endif %}
+      </p>
+
     </div>
-</div>
+  </div>
+
+
+  <!-- CONTENU PRINCIPAL -->
+
+  <div class="container mb-5">
+    <div class="row g-5">
+
+      <!-- Colonne gauche : le formulaire -->
+      <div class="col-lg-8">
+        <div class="carte-formulaire">
+
+          <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <!-- Section 1 : Informations principales -->
+            <p class="titre-section">Informations principales</p>
+
+            <!-- Titre du log -->
+            <div class="mb-4">
+              <label class="etiquette-champ" for="{{ form.titre.id_for_label }}">
+                Titre <span class="asterisque-requis">*</span>
+              </label>
+              <input
+                type="text"
+                id="{{ form.titre.id_for_label }}"
+                name="{{ form.titre.html_name }}"
+                value="{{ form.titre.value|default:'' }}"
+                placeholder="Ex : Erreur 500 sur /api/users"
+                class="champ-saisie {% if form.titre.errors %}champ-invalide{% endif %}"
+              />
+              <!-- Affichage des erreurs Django -->
+              {% for erreur in form.titre.errors %}
+                <p class="erreur-champ">
+                  <i class="bi bi-exclamation-circle me-1"></i>{{ erreur }}
+                </p>
+              {% endfor %}
+              <p class="texte-aide">Soyez précis et concis. Ex : "Bug login page mobile"</p>
+            </div>
+
+            <!-- Catégorie -->
+            <div class="mb-4">
+              <label class="etiquette-champ" for="{{ form.categorie.id_for_label }}">
+                Catégorie <span class="asterisque-requis">*</span>
+              </label>
+              <select
+                id="{{ form.categorie.id_for_label }}"
+                name="{{ form.categorie.html_name }}"
+                class="champ-saisie {% if form.categorie.errors %}champ-invalide{% endif %}"
+              >
+                <option value="">— Choisir une catégorie —</option>
+                {% for valeur, libelle in form.categorie.field.choices %}
+                  {% if valeur %}
+                    <option value="{{ valeur }}"
+                      {% if form.categorie.value|stringformat:"s" == valeur|stringformat:"s" %}selected{% endif %}
+                    >
+                      {{ libelle }}
+                    </option>
+                  {% endif %}
+                {% endfor %}
+              </select>
+              {% for erreur in form.categorie.errors %}
+                <p class="erreur-champ">
+                  <i class="bi bi-exclamation-circle me-1"></i>{{ erreur }}
+                </p>
+              {% endfor %}
+            </div>
+
+            <hr class="separateur-section" />
+
+            <!-- ── Section 2 : Contenu du log ── -->
+            <p class="titre-section">Contenu du log</p>
+
+            <!-- Description -->
+            <div class="mb-4">
+              <label class="etiquette-champ" for="{{ form.contenu.id_for_label }}">
+                Description <span class="asterisque-requis">*</span>
+              </label>
+              <textarea
+                id="{{ form.contenu.id_for_label }}"
+                name="{{ form.contenu.html_name }}"
+                class="champ-saisie champ-zone-texte {% if form.contenu.errors %}champ-invalide{% endif %}"
+                placeholder="Décrivez ce qui s'est passé, les étapes, la solution trouvée..."
+              >{{ form.contenu.value|default:'' }}</textarea>
+              {% for erreur in form.contenu.errors %}
+                <p class="erreur-champ">
+                  <i class="bi bi-exclamation-circle me-1"></i>{{ erreur }}
+                </p>
+              {% endfor %}
+              <p class="texte-aide">Plus vous êtes détaillé, plus votre équipe peut vous aider.</p>
+            </div>
+
+            <hr class="separateur-section" />
+
+            <!-- ── Section 3 : Image de preuve ── -->
+            <p class="titre-section">Image de preuve (optionnel)</p>
+
+            <!-- Si on modifie un log avec une image déjà existante -->
+            {% if object.image_preuve %}
+            <div class="apercu-image mb-3">
+              <img src="{{ object.image_preuve.url }}" alt="Image actuelle" />
+              <span>Image actuelle choisissez-en une nouvelle pour la remplacer.</span>
+            </div>
+            {% endif %}
+
+            <!-- Upload -->
+            <div class="mb-4">
+              <label class="etiquette-champ" for="{{ form.image_preuve.id_for_label }}">
+                Capture d'écran ou photo
+              </label>
+              <div class="zone-upload">
+                <i class="bi bi-cloud-upload icone-upload d-block"></i>
+                <p class="texte-upload mb-2">Cliquez pour choisir un fichier</p>
+                <input
+                  type="file"
+                  id="{{ form.image_preuve.id_for_label }}"
+                  name="{{ form.image_preuve.html_name }}"
+                  accept="image/*"
+                />
+              </div>
+              {% for erreur in form.image_preuve.errors %}
+                <p class="erreur-champ">
+                  <i class="bi bi-exclamation-circle me-1"></i>{{ erreur }}
+                </p>
+              {% endfor %}
+              <p class="texte-aide">Formats acceptés : JPG, PNG, GIF. Taille max : 5 Mo.</p>
+            </div>
+
+            <hr class="separateur-section" />
+
+            <!-- ── Boutons d'action ── -->
+            <div class="d-flex align-items-center gap-3 flex-wrap">
+              <button type="submit" class="bouton-valider">
+                <i class="bi bi-check-lg me-1"></i>
+                {% if object %}Enregistrer les modifications{% else %}Publier le log{% endif %}
+              </button>
+              <a href="{% url 'dashboard' %}" class="bouton-annuler">
+                Annuler
+              </a>
+            </div>
+
+          </form>
+
+        </div>
+      </div>
+
+      <!-- ── Colonne droite : conseils ── -->
+      <div class="col-lg-4">
+        <div class="panneau-conseil">
+
+          <p class="titre-conseil">
+            <i class="bi bi-lightbulb me-1"></i> Conseils pour un bon log
+          </p>
+
+          <div class="item-conseil">
+            <i class="bi bi-check-circle-fill"></i>
+            <span><strong>Titre clair :</strong> décrivez le problème ou l'action en une phrase courte.</span>
+          </div>
+
+          <div class="item-conseil">
+            <i class="bi bi-check-circle-fill"></i>
+            <span><strong>Bonne catégorie :</strong> Bug, Sprint, Veille ou Feature selon le contexte.</span>
+          </div>
+
+          <div class="item-conseil">
+            <i class="bi bi-check-circle-fill"></i>
+            <span><strong>Description détaillée :</strong> étapes, contexte, solution ou blocage actuel.</span>
+          </div>
+
+          <div class="item-conseil">
+            <i class="bi bi-check-circle-fill"></i>
+            <span><strong>Image de preuve :</strong> une capture d'écran vaut mieux qu'un long discours.</span>
+          </div>
+
+          <hr class="separateur-section" />
+
+          <p class="titre-conseil">
+            <i class="bi bi-info-circle me-1"></i> Informations
+          </p>
+
+          <div class="item-conseil">
+            <i class="bi bi-person-fill"></i>
+            <span>Auteur : <strong>{{ user.username }}</strong></span>
+          </div>
+
+          <div class="item-conseil">
+            <i class="bi bi-calendar3"></i>
+            <span>Date : enregistrée automatiquement</span>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+
 {% endblock %}

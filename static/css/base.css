@@ -1,0 +1,35 @@
+:root {
+      --vert:    #22c55e;
+      --noir:    #111827;
+      --gris:    #6b7280;
+      --bordure: #e5e7eb;
+      --fond:    #f9fafb;
+    }
+
+body { font-family: 'Space Grotesk', sans-serif; color: var(--noir); background: #fff; }
+
+/* ── Nav ── */
+nav { border-bottom: 1px solid var(--bordure); padding: .75rem 0; background: #fff; }
+
+.logo { font-family: 'Caveat', cursive; font-size: 1.6rem; font-weight: 700; color: var(--noir); text-decoration: none; }
+
+.nav-link-custom { font-size: .9rem; font-weight: 500; color: var(--noir); text-decoration: none; }
+
+.btn-outline-custom {
+    font-size: .85rem; padding: .4rem 1rem; border-radius: 6px; font-weight: 500;
+    border: 1.5px solid var(--noir); color: var(--noir); background: transparent; text-decoration: none;
+}
+.btn-solid-custom {
+    font-size: .85rem; padding: .4rem 1rem; border-radius: 6px; font-weight: 500;
+    background: var(--noir); color: #fff; text-decoration: none; border: none;
+}
+
+
+/* ── Footer ── */
+footer { border-top: 1px solid var(--bordure); margin-top: 70px; }
+.logo-pied { font-family: 'Caveat', cursive; font-size: 1.7rem; font-weight: 700; color: var(--noir); }
+.liens-pied a { font-size: .85rem; color: var(--noir); text-decoration: none; margin: 0 10px; }
+.liens-pied a:hover { text-decoration: underline; }
+.bas-pied { border-top: 1px solid var(--bordure); font-size: .78rem; color: var(--gris); }
+.bas-pied a { color: var(--gris); text-decoration: underline; margin-left: 16px; }
+

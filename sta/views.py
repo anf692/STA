@@ -42,9 +42,25 @@ class EntryListView(LoginRequiredMixin, ListView):
     context_object_name = 'entries'
     paginate_by = 6 
 
+
     def get_queryset(self):
         # Chaque user voit tous les logs
-        return Entry.objects.all().order_by('-date_creation')
+        queryset = Entry.objects.all().order_by('-date_creation')
+
+        # Filtre catégorie si présent dans l'URL
+        categorie = self.request.GET.get('categorie')
+        if categorie:
+            queryset = queryset.filter(categorie__nom=categorie)
+
+        return queryset
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # On envoie les catégories pour afficher les boutons
+        context['categories'] = Category.objects.all()
+        # On garde la catégorie active pour highlight le bouton
+        context['categorie_active'] = self.request.GET.get('categorie', '')
+        return context
 
 
 # ─── DETAIL ───────────────────────────────────────────────

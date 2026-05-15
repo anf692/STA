@@ -14,13 +14,57 @@
 
     /* ── En-tête ── */
     .entete-page { padding: 40px 0 28px; border-bottom: 1px solid var(--bordure); margin-bottom: 32px; }
-    .fil-ariane { font-size: .82rem; color: var(--gris); margin-bottom: .6rem; }
+    .fil-a-riane { font-size: .82rem; color: var(--gris); margin-bottom: .6rem; }
     .fil-ariane a { color: var(--gris); text-decoration: none; }
     .fil-ariane a:hover { color: var(--noir); }
     .entete-page h1 { font-size: clamp(1.4rem, 3vw, 1.9rem); font-weight: 700; }
 
     .compteur { font-size: .82rem; color: var(--gris); margin-bottom: 1.5rem; }
     .compteur strong { color: var(--noir); }
+
+    .filtre { justify-content: center; }
+
+    .btn-filter {
+      font-size: .78rem;
+      font-weight: 600;
+      padding: 0.3rem 0.9rem;
+      border-radius: 4px;
+      text-decoration: none;
+      border: 1.5px solid var(--bordure);
+      color: var(--gris);
+      background: #fff;
+      transition: all 0.2s;
+      display: inline-block;
+    }
+
+    /* Tous — actif */
+    .btn-filter:hover,
+    .btn-filter.active {
+      background: var(--noir);
+      color: #fff;
+      border-color: var(--noir);
+    }
+
+    /* Bug */
+    .filter-bug { border-color: #fca5a5; color: #ef4444; }
+    .filter-bug:hover,
+    .filter-bug.active { background: #ef4444; border-color: #ef4444; color: #fff; }
+
+    /* Sprint */
+    .filter-sprint { border-color: #86efac; color: #16a34a; }
+    .filter-sprint:hover,
+    .filter-sprint.active { background: #22c55e; border-color: #22c55e; color: #fff; }
+
+    /* Veille */
+    .filter-veille { border-color: #d1d5db; color: var(--gris); }
+    .filter-veille:hover,
+    .filter-veille.active { background: #6b7280; border-color: #6b7280; color: #fff; }
+
+    /* Défaut autres catégories */
+    .filter-defaut { border-color: var(--bordure); color: var(--noir); }
+    .filter-defaut:hover,
+    .filter-defaut.active { background: var(--noir); border-color: var(--noir); color: #fff; }
+
 
     /* ── Cards ── */
     .entry-card {
@@ -84,6 +128,35 @@
         </a>
       </div>
     </div>
+  </div>
+
+  <!-- FILTRE PAR CATEGORIE -->
+  <div class="d-flex align-items-center gap-2 flex-wrap mb-4 filtre">
+
+    <!-- Label -->
+    <span class="text-muted" style="font-size:.82rem; font-weight:600;">
+      <i class="bi bi-funnel me-1"></i>Filtrer :
+    </span>
+
+    <!-- Bouton Tous -->
+    <a href="{% url 'dashboard' %}"
+      class="btn-filter {% if not categorie_active %}active{% endif %}">
+      Tous
+    </a>
+
+    <!-- Boutons catégories -->
+    {% for cat in categories %}
+    <a href="?categorie={{ cat.nom }}"
+      class="btn-filter
+        {% if categorie_active == cat.nom %}active{% endif %}
+        {% if cat.nom == 'Bug' %}filter-bug
+        {% elif cat.nom == 'Sprint' %}filter-sprint
+        {% elif cat.nom == 'Veille' %}filter-veille
+        {% else %}filter-defaut{% endif %}">
+      {{ cat.nom }}
+    </a>
+    {% endfor %}
+
   </div>
 
   <!-- CONTENU -->

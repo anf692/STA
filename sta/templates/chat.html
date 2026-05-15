@@ -1,0 +1,174 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+<style>
+  .chat-wrapper {
+    max-width: 720px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+    height: calc(100vh - 160px);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .chat-header {
+    margin-bottom: 1rem;
+  }
+
+  .chat-header h1 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin: 0;
+  }
+
+  .chat-header p {
+    font-size: .85rem;
+    color: #6b7280;
+    margin: 0.25rem 0 0;
+  }
+
+  .chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px 16px 0 0;
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+  }
+
+  .bubble-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.6rem;
+  }
+
+  .bubble-row.user {
+    justify-content: flex-end;
+  }
+
+  .avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: .8rem;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .avatar.ia {
+    background: #111827;
+    color: #fff;
+  }
+
+  .avatar.usr {
+    background: #e5e7eb;
+    color: #374151;
+  }
+
+  .bubble {
+    padding: 0.75rem 1rem;
+    font-size: .9rem;
+    line-height: 1.6;
+    max-width: 80%;
+  }
+
+  .bubble.ia {
+    background: #f3f4f6;
+    color: #374151;
+    border-radius: 0 12px 12px 12px;
+  }
+
+  .bubble.user {
+    background: #111827;
+    color: #fff;
+    border-radius: 12px 0 12px 12px;
+  }
+
+  .chat-form {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-top: none;
+    border-radius: 0 0 16px 16px;
+    padding: 0.85rem 1rem;
+    display: flex;
+    gap: 0.6rem;
+    align-items: center;
+  }
+
+  .chat-form input {
+    flex: 1;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 0.6rem 0.9rem;
+    font-size: .9rem;
+    font-family: inherit;
+    outline: none;
+  }
+
+  .chat-form button {
+    background: #111827;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 0.6rem 1.2rem;
+    font-size: .9rem;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+</style>
+
+<div class="chat-wrapper">
+
+    <div class="chat-header">
+        <h1>Assistant STA</h1>
+        <p>Posez vos questions sur vos logs</p>
+    </div>
+
+    <div class="chat-messages">
+
+        <div class="bubble-row">
+            <div class="avatar ia">IA</div>
+            <div class="bubble ia">
+                👋 Bonjour ! Je suis votre assistant STA. Posez-moi des questions sur vos logs !
+            </div>
+        </div>
+
+        {% for msg in historique %}
+            {% if msg.role == 'user' %}
+            <div class="bubble-row user">
+                <div class="bubble user">{{ msg.content }}</div>
+                <div class="avatar usr">{{ request.user.username|slice:':2'|upper }}</div>
+            </div>
+            {% else %}
+            <div class="bubble-row">
+                <div class="avatar ia">IA</div>
+                <div class="bubble ia">{{ msg.content }}</div>
+            </div>
+            {% endif %}
+        {% endfor %}
+
+        <div id="bottom"></div>
+
+    </div>
+
+    <form method="post" action="{% url 'chatbot' %}#bottom" class="chat-form">
+        {% csrf_token %}
+        <input type="text" name="message"
+               placeholder="Posez votre question..."
+               autocomplete="off"
+               required>
+        <button type="submit">Envoyer →</button>
+    </form>
+
+</div>
+
+{% endblock %}

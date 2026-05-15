@@ -1,11 +1,16 @@
-from django.shortcuts import redirect
+import json
+
+from django.http import JsonResponse
+from django.shortcuts import redirect, render
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import login
 from django.views.generic import (
-    ListView, DetailView, CreateView, UpdateView, DeleteView
+    ListView, DetailView, CreateView, UpdateView, DeleteView, View
 )
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.urls import reverse_lazy
+
+from .services import ollama
 from .models import Entry, Category
 
 
@@ -108,3 +113,65 @@ class EntryDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
         return self.request.user == entry.auteur
 
 
+
+# ─── CHATBOT ─────────────────────────────────────────────
+def construire_contexte_logs(user):
+    """Transforme les logs en texte pour l'IA"""
+    logs = Entry.objects.filter(
+        auteur=user
+    ).select_related('categorie').order_by('-date_creation')[:20]
+
+    if not logs:
+        return "Aucun log disponible pour cet utilisateur."
+
+    texte = f"L'utilisateur {user.username} a {logs.count()} logs :\n\n"
+
+    for log in logs:
+        texte += (
+            f"[{log.date_creation.strftime('%d/%m/%Y %H:%M')}] "
+            f"{log.categorie.nom if log.categorie else 'Non classé'} — "
+            f"{log.titre} : {log.contenu}\n"
+        )
+    return texte
+
+
+class ChatbotView(LoginRequiredMixin, View):
+
+    def get(self, request):
+        if 'historique' not in request.session:
+            request.session['historique'] = []
+        return render(request, 'chat.html', {
+            'historique': request.session['historique']
+        })
+
+    def post(self, request):
+        message = request.POST.get('message', '').strip()
+
+        if not message:
+            return redirect('chatbot')
+
+        # Récupérer l'historique depuis la session
+        historique = request.session.get('historique', [])
+
+        # Contexte logs
+        contexte = construire_contexte_logs(request.user)
+
+        # Appel Ollama
+        reponse = ollama.envoyer_message(
+            message_utilisateur=message,
+            contexte_logs=contexte,
+            historique_messages=historique
+        )
+
+        # Ajouter à l'historique
+        historique.append({'role': 'user',      'content': message})
+        historique.append({'role': 'assistant', 'content': reponse})
+
+        # Sauvegarder en session
+        request.session['historique'] = historique
+        request.session.modified = True
+
+        return redirect('chatbot')
+    
+    
+    

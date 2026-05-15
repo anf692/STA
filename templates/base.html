@@ -17,9 +17,9 @@
       <!-- NAV -->
   <nav class="sticky-top">
     <div class="container d-flex align-items-center justify-content-between">
-      <a class="logo" href="{% url 'dashboard' %}">Logo</a>
+      <a class="logo" href="{% url 'accueil' %}">Logo</a>
       <div class="d-flex align-items-center gap-3">
-        <a class="nav-link-custom d-none d-md-inline" href="{% url 'dashboard' %}">Accueil</a>
+        <a class="nav-link-custom d-none d-md-inline" href="{% url 'accueil' %}">Accueil</a>
         <a class="nav-link-custom d-none d-md-inline" href="{% url 'dashboard' %}">Logs</a>
         <a class="nav-link-custom d-none d-md-inline" href="#">À propos</a>
         {% if user.is_authenticated %}
@@ -44,7 +44,7 @@
     <div class="container py-4 text-center">
       <div class="logo-pied mb-3">Logo</div>
       <div class="liens-pied">
-        <a href="{% url 'dashboard' %}">Accueil</a>
+        <a href="{% url 'accueil' %}">Accueil</a>
         <a href="{% url 'dashboard' %}">Logs</a>
         <a href="#">À propos</a>
         <a href="#">Contact</a>
